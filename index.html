@@ -1,29 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>Genesis Sphere</title>
-  <link rel="stylesheet" href="/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Creator's Universe | 이승민</title>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.152.2/build/three.module.js",
+                "gsap": "https://unpkg.com/gsap@3.12.2/index.js",
+                "gsap/": "https://unpkg.com/gsap@3.12.2/",
+                "troika-three-text": "https://unpkg.com/troika-three-text@0.47.1/dist/troika-three-text.esm.js",
+                "three/addons/": "https://unpkg.com/three@0.152.2/examples/jsm/"
+            }
+        }
+    </script>
+    
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- HERO: 캔버스 + UI 오버레이 -->
-  <section id="hero">
-    <!-- CSS가 .wrapper가 아니라 .hero-planet-wrapper를 보고 있으니, 이름을 맞춥니다 -->
-    <div class="hero-planet-wrapper">
-      <!-- JS도 document.querySelector('#app') 대신 #sphereCanvas를 쓰고 있으니, id를 sphereCanvas로 변경 -->
-      <canvas id="sphereCanvas"></canvas>
-      <div id="menuLabel">Move mouse over rings</div>
-    </div>
-  </section>
 
-  <div id="gallery" class="hidden"></div>
-  <div id="lightbox" class="hidden">
-    <span id="lbClose">✕</span>
-    <img id="lbImg" alt="">
-    <div id="lbInfo"></div>
-  </div>
+    <canvas id="app"></canvas>
+    <div id="scroll-container"></div>
 
-  <!-- JS도 /src/main.js에서 #sphereCanvas를 참조하도록 수정되어야 합니다 -->
-  <script type="module" src="/src/main.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>

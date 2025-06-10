@@ -1,0 +1,45 @@
+:root {
+  --blue: #00bfff;
+  --teal: #00e5ff;
+  --ring-glow: #00d9ff;
+}
+
+/* --- 공통 --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #000;
+  color: #fff;
+  overflow: hidden; /* 스크롤바 제거 */
+
+  /* 캔버스를 화면 중앙에 배치하기 위한 스타일 */
+  display: grid;
+  place-content: center;
+  min-height: 100vh;
+}
+
+/* --- HERO 섹션 --- */
+.hero-planet-wrapper {
+  position: relative;
+  width: 90vmin; /* 캔버스 영역을 조금 더 넓게 조정 */
+  height: 90vmin;
+  overflow: visible;
+}
+
+/* JavaScript에서 이 ID를 사용하므로 #app으로 선택자를 통일합니다. */
+#app {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: transparent;
+  cursor: grab;
+}
+
+#app:active {
+  cursor: grabbing;
+}
