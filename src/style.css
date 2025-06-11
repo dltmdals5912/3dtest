@@ -1,5 +1,9 @@
-/* Spoqa Han Sans Neo 폰트를 웹에서 직접 가져옵니다. */
-@import url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SpoqaHanSansNeo-Regular.woff');
+/* Spoqa Han Sans Neo 폰트를 웹에서 직접 가져옵니다. (수정된 방식) */
+@font-face {
+    font-family: 'Spoqa Han Sans Neo';
+    font-weight: 400;
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SpoqaHanSansNeo-Regular.woff') format('woff');
+}
 
 * {
     box-sizing: border-box;
@@ -11,6 +15,7 @@ body {
     background: #000005;
     color: #fff;
     overflow-x: hidden;
+    /* @font-face로 선언한 폰트를 사용 */
     font-family: 'Spoqa Han Sans Neo', sans-serif;
 }
 
