@@ -75,6 +75,10 @@ for (let i = 0; i < twinkleCount; i++) {
 }
 scene.add(twinkleGroup);
 
+// 시작점(Spark)
+const spark = new THREE.Points( new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0], 3)), new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, blending: THREE.AdditiveBlending, transparent: true }));
+scene.add(spark);
+
 
 // --- 인트로 & 프로필 & 프로젝트 관련 오브젝트 ---
 
@@ -117,7 +121,7 @@ projectsData.forEach((project, i) => {
     const desc = new Text(); desc.text = project.description; desc.font = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SpoqaHanSansNeo-Regular.woff'; desc.fontSize = 1; desc.color = 0xcccccc; desc.anchorX = 'left'; desc.position.set(5, 0, 0); desc.maxWidth = 20; desc.lineHeight = 1.5; desc.material.transparent = true; desc.material.opacity = 0; desc.sync();
     const tech = new Text(); tech.text = `Tech: ${project.tech}`; tech.font = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SpoqaHanSansNeo-Regular.woff'; tech.fontSize = 0.8; tech.color = 0xcccccc; tech.anchorX = 'left'; tech.position.set(5, -5, 0); tech.material.transparent = true; tech.material.opacity = 0; tech.sync();
     projectGroup.add(imageMesh, title, role, desc, tech);
-    projectGroup.position.z = -80 * (i + 1); // 프로젝트 간 간격 조절
+    projectGroup.position.z = -80 * (i + 1);
     projectsGroup.add(projectGroup);
 });
 scene.add(projectsGroup);
@@ -128,23 +132,36 @@ camera.position.z = 100;
 document.querySelector('#scroll-container').style.height = '2000vh';
 const tl = gsap.timeline({ scrollTrigger: { trigger: "#scroll-container", start: "top top", end: "bottom bottom", scrub: 1.5, } });
 
-// --- Act 1: 접속 시도 ---
-tl.to(camera.position, { z: 40, duration: 15 });
-const initialTextPositions = { left: { x: -28, y: 0, z: 0 }, center: { x: 0, y: 0, z: 0 }, right: { x: 28, y: 0, z: 0 }, };
-tl.set(coordinatesText.position, initialTextPositions.left);
-tl.set(uniqueIDText.position, initialTextPositions.center);
-tl.set(coreComponentsText.position, initialTextPositions.right);
-tl.to([coordinatesText.material, uniqueIDText.material, coreComponentsText.material], { opacity: 1, duration: 8, stagger: 0.5 }, "<");
+
+// --- Act 1: 하나의 점(spark) 등장 및 소멸 ---
+// [FIXED] 이전에 합의한 대로, 스크롤 길이를 길게(duration: 20) 유지하도록 복구
+tl.to(camera.position, { z: 10, duration: 20, ease: "power1.in" });
+tl.to(spark.material, { size: 2.0, duration: 20 }, "<");
+tl.to(spark.material, { opacity: 0, duration: 3, ease: "power2.out" });
+
+
+// --- Act 2: 카메라 구도 설정 및 텍스트 등장 ---
+tl.to({}, {duration: 5});
+tl.addLabel("setupView");
+tl.to(camera.position, { z: 40, duration: 10 }, "setupView");
+tl.to({}, {duration: 5});
+
+tl.addLabel("textsAppear", ">");
+const textPositions = { left: { x: -28, y: 0, z: 0 }, center: { x: 0, y: 0, z: 0 }, right: { x: 28, y: 0, z: 0 }, };
+tl.set(coordinatesText.position, textPositions.left);
+tl.set(uniqueIDText.position, textPositions.center);
+tl.set(coreComponentsText.position, textPositions.right);
+tl.to([coordinatesText.material, uniqueIDText.material, coreComponentsText.material], { opacity: 1, duration: 8, stagger: 0.5 }, "textsAppear");
 tl.to({}, {duration: 10});
 
-// --- Act 2: 접속 완료 ---
+// --- Act 3: 접속 완료 ---
 tl.addLabel("merge");
 tl.to([coordinatesText.position, uniqueIDText.position, coreComponentsText.position], { x: 0, y: 0, z: 0, duration: 8, ease: 'power2.in' }, "merge");
 tl.to([coordinatesText.material, uniqueIDText.material, coreComponentsText.material], { opacity: 0, duration: 5 }, "<");
 tl.to(accessCompleteText.material, { opacity: 1, duration: 3 }, ">-2");
 tl.to({}, {duration: 8});
 
-// --- Act 3: 프로필 구성 ---
+// --- Act 4: 프로필 구성 ---
 tl.addLabel("constructProfile");
 tl.to(accessCompleteText.material, { opacity: 0, duration: 3 }, "constructProfile");
 verticalLine.position.set(-7, 0, 0);
@@ -162,13 +179,13 @@ tl.from([profileTitle.position, profileSlogan.position, profileEmail.position, p
 tl.to(verticalLine.material, { opacity: 0, duration: 5 }, ">");
 tl.to({}, {duration: 15});
 
-// --- Act 4: 프로젝트 섹션으로 전환 ---
+// --- Act 5: 프로젝트 섹션으로 전환 ---
 tl.addLabel("transitionToProjects");
 tl.to(profileGroup.position, { y: -30, duration: 10, ease:'power2.in' }, "transitionToProjects");
 tl.to(profileGroup.scale, { x: 0.8, y: 0.8, z: 0.8, duration: 10 }, "<");
 tl.to(camera.position, { x: 0, y: 0, z: -255, duration: 40, ease: 'power1.inOut' }, "transitionToProjects+=5");
 
-// --- Act 5: 프로젝트 탐색 ---
+// --- Act 6: 프로젝트 탐색 ---
 projectsGroup.children.forEach((projectGroup, i) => {
     tl.addLabel(`project${i}`, `>-=10`);
     tl.to(camera.position, {
