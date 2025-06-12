@@ -33,6 +33,9 @@ window.addEventListener('resize', () => {
     composer.setSize(window.innerWidth, window.innerHeight);
 });
 
+// --- 텍스처 로더 ---
+const textureLoader = new THREE.TextureLoader();
+
 // --- 월드 오브젝트 선언 ---
 function createStars(count, size, depth) { const vertices = []; for (let i = 0; i < count; i++) { vertices.push((Math.random() - 0.5) * depth, (Math.random() - 0.5) * depth, (Math.random() - 0.5) * depth ); } const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); const material = new THREE.PointsMaterial({ color: 0xaaaaaa, size, transparent: true, opacity: 0.7 }); return new THREE.Points(geometry, material); }
 scene.add(createStars(1500, 1.5, 1500));
@@ -44,12 +47,49 @@ const uniqueIDText = new Text(); scene.add(uniqueIDText); uniqueIDText.text = 'O
 const coreComponentsText = new Text(); scene.add(coreComponentsText); coreComponentsText.text = 'LOGIC | CREATIVITY | DIMENSION'; coreComponentsText.font = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SpoqaHanSansNeo-Regular.woff'; coreComponentsText.fontSize = 1.8; coreComponentsText.color = 0xffffff; coreComponentsText.anchorX = 'center'; coreComponentsText.material.transparent = true; coreComponentsText.material.opacity = 0; coreComponentsText.sync();
 const descriptionText = new Text(); coreComponentsText.add(descriptionText); descriptionText.text = 'JavaScript, Algorithm | AI Art, Storytelling | 3D, Interactive Space'; descriptionText.font = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SpoqaHanSansNeo-Regular.woff'; descriptionText.fontSize = 0.8; descriptionText.color = 0xbbbbbb; descriptionText.anchorX = 'center'; descriptionText.position.y = -1.5; descriptionText.material.transparent = true; descriptionText.material.opacity = 0; descriptionText.sync();
 
+// =======================================================
+// == 새로운 자기소개 섹션 오브젝트 (NEW)
+// =======================================================
+const profileGroup = new THREE.Group();
+profileGroup.visible = false;
+scene.add(profileGroup);
+
+// 프로필 이미지
+const profileImageMat = new THREE.MeshBasicMaterial({
+    map: textureLoader.load('src/profile.png'), // 파일명 확인!
+    transparent: true,
+    opacity: 0
+});
+const profileImage = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), profileImageMat);
+profileGroup.add(profileImage);
+
+// 프로필 텍스트 함수
+function createProfileText(text, size, yPos) {
+    const newText = new Text();
+    newText.text = text;
+    newText.font = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SpoqaHanSansNeo-Regular.woff';
+    newText.fontSize = size;
+    newText.color = 0xffffff;
+    newText.anchorX = 'center';
+    newText.position.y = yPos;
+    newText.material.transparent = true;
+    newText.material.opacity = 0;
+    newText.sync();
+    profileGroup.add(newText);
+    return newText;
+}
+
+// 텍스트 생성
+const tagline1Text = createProfileText('기술과 비즈니스를 융합한 Tech Connection', 1, 6);
+const nameText = createProfileText('이승민입니다.', 1.5, -5.5);
+const tagline2Text = createProfileText('저는 정리자이자 연결자입니다.', 0.8, -7.5);
+const contactText = createProfileText('Tel: 010-4009-6329  |  Birth: 2002.06.21  |  E-mail: rlaxodud5877@naver.com', 0.6, -9.5);
+
+
 // 스킬 허브 오브젝트
 const skillHubContainer = new THREE.Group();
 skillHubContainer.visible = false;
 scene.add(skillHubContainer);
-
-const textureLoader = new THREE.TextureLoader();
 
 function createRing(radius) { const ring = new THREE.Points( new THREE.TorusGeometry(radius, 0.05, 64, 200), new THREE.PointsMaterial({ color: 0xffffff, size: 0.08, transparent: true, opacity: 0 }) ); ring.scale.set(0, 0, 0); skillHubContainer.add(ring); return ring; }
 const outerRing = createRing(14);
@@ -63,14 +103,13 @@ function createSkill(logoUrl, proficiency, radius, angleOffset) {
     const icon = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), iconMat);
     group.add(icon);
 
-    const gaugeWidth = 5; // 게이지 너비 증가
+    const gaugeWidth = 5; 
     const gaugeHeight = 0.2;
-    const gaugeMargin = 0.5; // 아이콘과의 간격
-    const gaugeStartX = 1.8 / 2 + gaugeMargin; // 아이콘 오른쪽에서 시작
+    const gaugeMargin = 0.5; 
+    const gaugeStartX = 1.8 / 2 + gaugeMargin;
 
     const gaugeBgMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false });
     const gaugeBg = new THREE.Mesh(new THREE.PlaneGeometry(gaugeWidth, gaugeHeight), gaugeBgMat);
-    // 아이콘 옆에 배치되도록 위치 변경
     gaugeBg.position.set(gaugeStartX + gaugeWidth / 2, 0, -0.01);
     group.add(gaugeBg);
     
@@ -100,7 +139,7 @@ let isOrbiting = true;
 camera.position.z = 100;
 const tl = gsap.timeline({ scrollTrigger: { trigger: "#scroll-container", start: "top top", end: "bottom bottom", scrub: 2, } });
 
-// ... Act 1, 2, 3 로직 ...
+// --- Act 1: 인트로 텍스트 등장 ---
 tl.to(camera.position, { z: 10, duration: 10, ease: "power1.in" });
 tl.to(spark.material, { size: 2.0, duration: 10 }, "<");
 tl.to(spark.material, { opacity: 0, duration: 3, ease: "power2.out" });
@@ -117,15 +156,52 @@ tl.to(coreComponentsText.material, { opacity: 1, duration: 8 }, "<2");
 tl.to(descriptionText.material, { opacity: 1, duration: 8 }, "<");
 tl.to(camera.position, { x: 0, y: 0, z: 35, duration: 15, ease: "power2.out" });
 tl.to(camera.rotation, { x: 0, y: 0, z: 0, duration: 15 }, "<");
-tl.addLabel("deconstructionStart", "+=8");
-tl.to(coordinatesText.material, { opacity: 0, duration: 5 }, "deconstructionStart");
-tl.to(uniqueIDText.material, { opacity: 0, duration: 5 }, "deconstructionStart+=2");
-tl.to(coreComponentsText.material, { opacity: 0, duration: 5 }, "deconstructionStart+=4");
-tl.to(descriptionText.material, { opacity: 0, duration: 5 }, "<");
-tl.to(camera.position, { z: 20, duration: 5 }, ">");
 
-// Act 4: 스킬 허브 탄생
-tl.addLabel("skillHubStart", ">");
+// =======================================================
+// == Act 2: 자기소개 페이지로 전환 (MODIFIED)
+// =======================================================
+tl.addLabel("deconstructionStart", "+=8");
+
+// 기존 텍스트 분해 및 소멸
+const oldTexts = [coordinatesText, uniqueIDText, coreComponentsText, descriptionText];
+oldTexts.forEach(text => {
+    tl.to(text.material, { opacity: 0, duration: 3, ease: 'power2.out' }, "deconstructionStart");
+    tl.to(text.scale, { x: 0.1, y: 0.1, z: 0.1, duration: 3, ease: 'power2.out' }, "<");
+});
+tl.to(camera.position, { z: 25, duration: 5 }, "deconstructionStart"); // 카메라 살짝 이동
+
+// 자기소개 그룹 등장
+tl.addLabel("profileReveal", ">-1");
+tl.set(profileGroup, { visible: true }, "profileReveal");
+
+// 이미지 페이드인 및 스케일업
+tl.to(profileImage.material, { opacity: 1, duration: 5, ease: 'power2.out' }, "profileReveal");
+tl.from(profileImage.scale, { x: 0.5, y: 0.5, z: 0.5, duration: 5, ease: 'power3.out' }, "<");
+
+// 텍스트 순차적으로 등장
+const profileTexts = [tagline1Text, nameText, tagline2Text, contactText];
+profileTexts.forEach(text => {
+    tl.to(text.material, { opacity: 1, duration: 4, ease: 'power2.out' }, "profileReveal+=1");
+    tl.from(text.position, { y: text.position.y + 2, duration: 4, ease: 'power3.out' }, "<");
+});
+
+// 자기소개 페이지 잠시 유지
+tl.to({}, { duration: 15 });
+
+// 자기소개 페이지 퇴장
+tl.addLabel("profileFadeOut", ">");
+tl.to(profileGroup.material || profileGroup.children.map(c => c.material), {
+    opacity: 0,
+    duration: 5,
+    ease: 'power2.in',
+    stagger: 0.3
+}, "profileFadeOut");
+
+
+// =======================================================
+// == Act 3: 스킬 허브 탄생 (TIMING ADJUSTED)
+// =======================================================
+tl.addLabel("skillHubStart", ">-2"); // 자기소개 퇴장과 동시에 스킬허브 준비 시작
 convergingParticles.children.forEach(particle => { tl.to(particle.material, { opacity: 1, duration: 2 }, "skillHubStart"); tl.to(particle.position, { x: 0, y: 0, z: 0, duration: 4, ease: "power2.in" }, "skillHubStart"); tl.to(particle.material, { opacity: 0, duration: 1 }, ">-1"); });
 tl.set(glitchPass, { enabled: true }, "skillHubStart+=4");
 tl.set(glitchPass, { enabled: false }, "skillHubStart+=4.4");
@@ -144,7 +220,7 @@ tl.to(allGauges, { x: i => allProficiencies[i], duration: 1.5, ease: 'expo.out',
 tl.to(camera.position, { z: 35, duration: 10 }, ">-5");
 
 // =======================================================
-// == Act 5: 궤도 이탈 및 재정렬 (레이아웃 수정 적용)
+// == Act 4: 궤도 이탈 및 재정렬 (기존 Act 5)
 // =======================================================
 tl.addLabel("realignmentStart", "+=8");
 tl.call(() => { isOrbiting = false; });
@@ -157,18 +233,18 @@ const startY_vertical = totalHeight / 2;
 
 skills.forEach((skill, index) => {
     tl.to(skill.group.position, {
-        x: -10, // 왼쪽으로 더 이동
+        x: -10,
         y: startY_vertical - index * verticalSpacing,
         z: 0,
         duration: 5,
         ease: 'power2.inOut'
     }, "realignmentStart+=1");
 });
-// 카메라 워크 수정
+
 tl.to(camera.position, {
-    x: 4, // 오른쪽으로 이동
+    x: 4,
     y: 0,
-    z: 22, // 더 가까이 다가감
+    z: 22,
     duration: 5,
     ease: 'power2.inOut'
 }, "realignmentStart+=1");
