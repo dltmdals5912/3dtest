@@ -310,9 +310,9 @@ const ffMat=new THREE.ShaderMaterial({
 });
 finaleGrp.add(new THREE.Points(ffGeom,ffMat));
 /* Galaxy */
-const GAL=100000,galArr=new Float32Array(GAL*3);
+const GAL=250000,galArr=new Float32Array(GAL*3);
 for(let i=0;i<GAL;i++){
-  const r=Math.random()*60,a=Math.random()*Math.PI*2,z=(Math.random()-.5)*30;
+  const r=Math.random()*60,a=Math.random()*Math.PI*2,z=(Math.random()-.5)*60;
   galArr.set([r*Math.cos(a),r*Math.sin(a)*0.7,z],i*3);
 }
 const galGeom=new THREE.BufferGeometry();galGeom.setAttribute('position',new THREE.BufferAttribute(galArr,3));
@@ -522,7 +522,7 @@ function createTimeline(){
       .to(n.material,{opacity:1,duration:6,ease:'power3.out'},t);
   });
   tl.to(vLine.material,{opacity:0,duration:5},'profile+=9');
-  tl.to({},{duration:15});
+  tl.to({},{duration:10});
 
   /* Act5 – Projects */
   tl.addLabel('projects');
@@ -535,7 +535,7 @@ function createTimeline(){
     tl.to(g.userData.thumb.material.uniforms.u_opacity,{value:1,duration:8,stagger:0.2},'<');
     const mats=g.userData.txtNodes.map(n=>n.material);
     tl.to(mats,{opacity:1,duration:8,stagger:0.2},'<');
-    tl.to({},{duration:20});
+    tl.to({},{duration:10});
     if(i<projectsGrp.children.length-1){
       tl.to(g.userData.thumb.material.uniforms.u_opacity,{value:0,duration:8,stagger:0.05});
       tl.to(mats,{opacity:0,duration:8,stagger:0.05},'<');
@@ -555,22 +555,47 @@ function createTimeline(){
   tl.to(ffMat.uniforms.u_opacity,{value:0.7,duration:10},'<');
   tl.to(ffMat.uniforms.u_force_strength,{value:10,duration:10,ease:'power2.out'},'<');
 
-  /* Act7 – Galaxy Intro */
-  tl.addLabel('galaxyIntro','blackhole+=14');
+  /* Act7 – Galaxy Intro (타이밍 단축) */
+  tl.addLabel('galaxyIntro','blackhole+=');
   tl.to(ffMat.uniforms.u_opacity,{value:0,duration:6},'galaxyIntro');
-  tl.to(bloomPass,{strength:1.8,duration:10},'galaxyIntro');
+  
+  // 갤럭시가 형성되는 시간을 단축하여 '지체되는 느낌'을 줄입니다. (15 -> 8)
   tl.to(galMat.uniforms.u_progress, {
       value: 1.0, 
-      duration: 15, 
-      ease: 'power3.out'
+      duration: 8, 
+      ease: 'power2.out'
   }, 'galaxyIntro+=1');
-  tl.to(camera.position,{z:35,duration:12,ease:'power2.inOut'},'<');
 
-  /* Act8 – Galaxy Fly */
+  // 카메라가 뒤로 빠지는 시간도 위와 맞춥니다. (12 -> 8)
+  tl.to(camera.position,{z:25,duration:8,ease:'power2.inOut'},'<');
+  
+  // 블룸 효과가 나타나는 시간도 단축합니다. (10 -> 8)
+  tl.to(bloomPass,{strength:1.8,duration:8},'galaxyIntro');
+
+
+  /* Act8 – Galaxy Fly (직선 관통으로 수정) */
   tl.addLabel('galaxyFly');
-  tl.to(camera.position,{z:-50,duration:60,ease:'none'},'galaxyFly');
-  tl.to(galaxy.rotation,{y:Math.PI*2,duration:60,ease:'none'},'galaxyFly');
-  tl.to(bloomPass,{strength:2.5,duration:60,ease:'none'},'galaxyFly');
+  
+  // 카메라를 z:25에서 z:-80까지, 하나의 강력하고 일정한 속도로 관통시킵니다.
+  // ease: 'none'은 가감속 없는 일정한 속도를 의미하여 'ㅡ'자 움직임을 만듭니다.
+  tl.to(camera.position, {
+    z: -80,
+    duration: 20, // 105유닛 거리를 20의 시간동안 주파하여 빠른 속도감을 줍니다.
+    ease: 'none'
+  }, 'galaxyFly');
+
+  // 회전과 블룸 효과도 위 관통 시간에 정확히 맞춥니다.
+  tl.to(galaxy.rotation, {
+    y: Math.PI * 2,
+    duration: 20,
+    ease: 'none'
+  }, 'galaxyFly');
+  tl.to(bloomPass, {
+    strength: 2.5,
+    duration: 20,
+    ease: 'none'
+  }, 'galaxyFly');
+
 
   /* Act9 – Planet */
   tl.addLabel('planetIntro','galaxyFly+=60');
