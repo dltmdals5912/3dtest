@@ -1,9 +1,7 @@
-// src/modules/setupTimeline.js
-
 import { gsap } from 'gsap';
 import * as THREE from 'three';
 
-// 헬퍼 함수 (utils.js 파일에서 가져오는 것을 권장)
+// 헬퍼 함수
 const placeInFront = (obj, dist, camera) => {
   const dir = new THREE.Vector3();
   camera.getWorldDirection(dir);
@@ -11,7 +9,6 @@ const placeInFront = (obj, dist, camera) => {
 };
 
 export function createTimeline(elements) {
-  // ▼▼▼▼▼ 이 블록 전체를 아래 코드로 교체해주세요. ▼▼▼▼▼
   const {
     camera, bloomPass, glitchPass, scrollContainer, initialScreen,
     spark, coordTxt, idTxt, coreTxt, accessTxt,
@@ -23,12 +20,11 @@ export function createTimeline(elements) {
     reactNativeText,
     bigBangGrp, bangMat,
     allTextNodes, tooltipText,
-    starfield, twinkleGrp, // backgroundElements에서 가져옴
-    galaxyField          // galaxyFieldElements에서 가져옴
+    starfield, twinkleGrp,
+    galaxyField
   } = elements;
 
-
-  scrollContainer.style.height = '15000vh';
+  scrollContainer.style.height = '16000vh';
 
   const tl = gsap.timeline({
     scrollTrigger: {
@@ -105,71 +101,48 @@ export function createTimeline(elements) {
   tl.to(pivot2.rotation, { y: `-=${Math.PI / 4}`, duration: deconstructDuration, ease: ease }, deconstructLabel);
   tl.to(pivot3.rotation, { y: `+=${Math.PI / 4}`, duration: deconstructDuration, ease: ease }, deconstructLabel);
   tl.to(reactNativeText.material, { opacity: 0, duration: deconstructDuration / 2, ease: ease }, deconstructLabel);
-  
-  /* ✨ [수정] Act12 - 은하 생성 */
-  const galaxyCreationLabel = "galaxyCreation";
-  tl.addLabel(galaxyCreationLabel, ">+=20"); // 해체 후 잠시 대기
-  
-  tl.fromTo(bloomPass, 
-    { strength: 3.0 },
-    { strength: 0.8, duration: 25, ease: 'power3.inOut' },
-    galaxyCreationLabel
-  );
+  tl.to({}, { duration: 20 }); // 해체 후 잠시 대기
 
-  tl.call(() => {
-    // ✨ finaleElements 대신 bigBangElements 사용
-    bigBangGrp.position.set(0, 0, 0); 
-    bigBangGrp.rotation.set(Math.PI / 6, 0, -Math.PI / 8);
-    bigBangGrp.visible = true;
-  }, null, galaxyCreationLabel);
-
-  tl.fromTo(bangMat.uniforms.u_opacity, 
-    { value: 0.0 }, 
-    { value: 0.8, duration: 15, ease: 'power2.out' }, 
-    galaxyCreationLabel
-  );
-  
-  tl.to(bangMat.uniforms.u_progress, { value: 1, duration: 25, ease: 'power3.out' }, galaxyCreationLabel);
-  
-  tl.to(camera.position, { z: 250, duration: 35, ease: 'power2.out' }, galaxyCreationLabel);
-
-  /* ✨ [수정] Act13 - 우주 생성 및 코즈믹 줌아웃 (통합 최종본) */
+  /* ✨ [최종 수정] Act12 - 우주 생성 및 코즈믹 줌아웃 (단일 시퀀스) */
   const finalSequenceLabel = "finalSequence";
-  // ✅ 수정: ">+=20" 에서 "+=20"을 제거하여 멈춤 없이 바로 시작하도록 변경
-  tl.addLabel(finalSequenceLabel, ">");
+  tl.addLabel(finalSequenceLabel, ">"); // 멈춤 없이 바로 시작
 
-  // --- 모든 최종 애니메이션의 길이를 60으로 통일하여 하나의 흐름으로 만듭니다 ---
+  const finalDuration = 60; // 전체 시퀀스 길이
 
-  const finalDuration = 60;
+  // 1. 이전 객체(planetGrp)는 시퀀스 시작과 함께 사라짐
+  const allPlanetMats = [particleSphereMat, ...ringMats];
+  tl.to(allPlanetMats, { opacity: 0, duration: 15, ease: 'power2.out' }, finalSequenceLabel);
+  tl.set(planetGrp, { visible: false }, ">");
 
-  // 1. 메인 은하 생성
+  // 2. 새로운 은하 생성
   tl.call(() => {
-    bigBangGrp.position.set(0, 0, 0);
+    bigBangGrp.position.set(0, 0, 0); // 월드 원점에서 생성
     bigBangGrp.rotation.set(Math.PI / 6, 0, -Math.PI / 8);
     bigBangGrp.visible = true;
   }, null, finalSequenceLabel);
   
-  // ✅ 수정: duration을 finalDuration으로 통일. ease로 초반에 빠르게 생성되는 느낌은 유지.
   tl.to(bangMat.uniforms.u_progress, { value: 1, duration: finalDuration, ease: 'power3.out' }, finalSequenceLabel);
   tl.fromTo(bangMat.uniforms.u_opacity, 
     { value: 0.0 }, 
-    { value: 0.8, duration: finalDuration / 2, ease: 'power2.out' }, // 절반 시간 동안 나타남
+    { value: 0.8, duration: finalDuration / 2, ease: 'power2.out' },
     finalSequenceLabel
   );
 
-  // 2. 메인 은하는 전체 시퀀스에 걸쳐 서서히 작아짐
+  // 3. 메인 은하는 전체 시퀀스에 걸쳐 서서히 작아짐
   tl.to(bigBangGrp.scale, { x: 0.05, y: 0.05, z: 0.05, duration: finalDuration, ease: 'power2.inOut' }, finalSequenceLabel);
 
-  // 3. 원거리 은하들(점들)이 서서히 나타남
+  // 4. 원거리 은하들이 서서히 나타남
   tl.call(() => {
     galaxyField.visible = true;
   }, null, finalSequenceLabel);
   tl.to(galaxyField.material, { opacity: 0.7, duration: finalDuration, ease: 'power2.in' }, finalSequenceLabel);
   
-  // 4. 카메라는 처음부터 끝까지, 한번에 계속해서 멀어짐
+  // 5. 카메라는 처음부터 끝까지, 한번에 계속해서 멀어짐
   tl.to(camera.position, { z: 2500, duration: finalDuration, ease: 'power2.inOut' }, finalSequenceLabel);
 
-  // 5. 기타 효과들도 전체 시간에 걸쳐 자연스럽게 조절
+  // 6. 기타 효과들도 전체 시간에 걸쳐 자연스럽게 조절
   tl.fromTo(bloomPass, { strength: 3.0 }, { strength: 0.6, duration: finalDuration, ease: 'power1.inOut' }, finalSequenceLabel);
   tl.to(starfield.material, { opacity: 0.7, duration: finalDuration }, finalSequenceLabel);
+
+  return tl;
 }
