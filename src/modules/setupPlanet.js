@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { Text } from 'troika-three-text';
-// ✅ [수정] ScrollTrigger를 사용하기 위해 gsap에서 임포트합니다.
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 // Asset imports
@@ -32,7 +31,6 @@ export function setupPlanet(scene, renderer, camera) {
     planetGrp.visible = false;
     scene.add(planetGrp);
 
-    // 파티클 구 생성 (원본 로직 유지)
     const SPHERE_CNT = 6000,
       RADIUS = 8,
       pts = new Float32Array(SPHERE_CNT * 3);
@@ -51,8 +49,8 @@ export function setupPlanet(scene, renderer, camera) {
       color: 0x4466ff,
       size: 0.22,
       transparent: true,
-      opacity: 0.55,
-      blending: THREE.AdditiveBlending,
+      opacity: 0.2, // ✨ [수정] 밝기 재조절 (0.4 -> 0.2)
+      blending: THREE.AdditiveBlending, // ✨ [수정] 다시 AdditiveBlending으로 복원
       depthWrite: false
     });
     const particleSphere = new THREE.Points(
@@ -61,7 +59,6 @@ export function setupPlanet(scene, renderer, camera) {
     );
     planetGrp.add(particleSphere);
 
-    // 파티클 링 생성 (원본 로직 유지)
     const RING_COLOR = 0x66ccff;
     const ringMats = [];
     const makeParticleRing = (radius, particleCount) => {
@@ -72,7 +69,14 @@ export function setupPlanet(scene, renderer, camera) {
         }
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
-        const material = new THREE.PointsMaterial({ color: RING_COLOR, size: 0.15, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false });
+        const material = new THREE.PointsMaterial({
+            color: RING_COLOR,
+            size: 0.15,
+            transparent: true,
+            opacity: 0.15, // ✨ [수정] 밝기 재조절 (0.35 -> 0.15)
+            blending: THREE.AdditiveBlending, // ✨ [수정] 다시 AdditiveBlending으로 복원
+            depthWrite: false
+        });
         ringMats.push(material);
         return new THREE.Points(geometry, material);
     };
@@ -80,7 +84,6 @@ export function setupPlanet(scene, renderer, camera) {
     const ring1 = makeParticleRing(10, 2000), ring2 = makeParticleRing(12.5, 2500), ring3 = makeParticleRing(15, 3000);
     const pivot1 = makePivot(ring1, 0, 0), pivot2 = makePivot(ring2, THREE.MathUtils.degToRad(30), 0), pivot3 = makePivot(ring3, 0, THREE.MathUtils.degToRad(45));
 
-    // Tech Skills
     const techSkillsGroup = new THREE.Group();
     techSkillsGroup.position.set(-23, 0, 0);
     planetGrp.add(techSkillsGroup);
@@ -181,9 +184,8 @@ export function animatePlanet(elements, t, camera) {
         techSkillsGroup, tooltipText, reactNativeText, gaugeTexts
     } = elements;
 
-    // ✅ [수정] GSAP 타임라인을 직접 참조하여 자동 회전 여부를 결정하는 더 안정적인 로직
     const timeline = ScrollTrigger.getById('mainTimeline')?.animation;
-    let isBeforeReactFinale = true; // 기본값은 자동 회전 활성화
+    let isBeforeReactFinale = true;
 
     if (timeline) {
         const reactFinaleTime = timeline.labels.reactFinale;

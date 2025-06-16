@@ -15,8 +15,9 @@ import { setupProfile, layoutProfile } from './modules/setupProfile.js';
 import { setupProjects } from './modules/setupProjects.js';
 import { setupFinale, animateFinale } from './modules/setupFinale.js';
 import { setupPlanet, animatePlanet, checkPlanetInteraction } from './modules/setupPlanet.js';
-import { setupBigBang, animateBigBang } from './modules/setupBigBang.js';
+import { setupBigBang, animateBigBang } from './modules/setupWeaver.js';
 import { createTimeline } from './modules/setupTimeline.js';
+import { setupGalaxyField } from './modules/setupGalaxyField.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -58,19 +59,23 @@ addEventListener('resize', () => {
 });
 
 /* ────────────────── 모듈별 객체 생성 ────────────────── */
-const backgroundElements = setupBackground(scene);
-const profileElements = setupProfile(scene, renderer);
-const projectsElements = setupProjects(scene, renderer);
-const finaleElements = setupFinale(scene);
-const planetElements = setupPlanet(scene, renderer, camera);
-const bigBangElements = setupBigBang(scene);
+// 변수명을 bgElems → backgroundElements로 통일
+const backgroundElements = setupBackground(scene, camera);
+const profileElements    = setupProfile(scene, renderer);
+const projectsElements   = setupProjects(scene, renderer);
+const finaleElements     = setupFinale(scene);
+const planetElements     = setupPlanet(scene, renderer, camera);
+const bigBangElements    = setupBigBang(scene);
+const galaxyFieldElements = setupGalaxyField(scene);
 
+// 텍스트 노드 모으기
 const allTextNodes = [
   ...profileElements.profileNodes,
-  ...projectsElements.projectGroups.flatMap(p => p.userData.txtNodes), // .projects -> .projectGroups
+  ...projectsElements.projectGroups.flatMap(p => p.userData.txtNodes),
   planetElements.reactNativeText
 ];
-// 프로필 레이아웃이 먼저 계산되어야 타임라인 생성 가능
+
+// 프로필 레이아웃 완료 후에 타임라인 생성
 profileElements.pSlogan.sync(() => {
   layoutProfile(profileElements);
 
@@ -86,6 +91,7 @@ profileElements.pSlogan.sync(() => {
     ...finaleElements,
     ...planetElements,
     ...bigBangElements,
+    ...galaxyFieldElements, 
     allTextNodes
   });
 
@@ -100,7 +106,9 @@ function animate() {
   const t = clock.getElapsedTime();
   const timeline = ScrollTrigger.getById('mainTimeline')?.animation;
 
+  // backgroundElements 로 이름을 통일해서 넘겨줍니다
   animateBackground(backgroundElements, t);
+
   if (finaleElements.finaleGrp.visible) {
     animateFinale(finaleElements, t, mousePos, camera);
   }
